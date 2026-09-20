@@ -36,5 +36,5 @@ fn main() {
     println!("Hour: {}", now.hour());
     println!("Is sleep time: {}", is_sleep_time());
 
-    model::image_test()
+    model::black_image_test()
 }

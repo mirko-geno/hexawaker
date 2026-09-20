@@ -1,5 +1,6 @@
 use burn::prelude::*;
-use burn_ndarray::NdArray;
+use burn_flex::Flex;
+use burn_vision::{Nms, NmsOptions};
 use image::imageops::FilterType;
 
 mod sleep_person_yolo26n {
@@ -7,15 +8,69 @@ mod sleep_person_yolo26n {
 }
 
 
+pub fn black_image_test() {
+    type Backend = Flex;
+    let device = Default::default();
+    
+    let model = sleep_person_yolo26n::Model::<Backend>::default();
+    println!("Modelo cargado correctamente.");
+
+    let images = Tensor::<Backend, 4>::zeros([1, 3, 640, 640], &device);
+
+    let output = model.forward(images);
+    println!("Output shape: {:?}", output.dims());
+
+    let output_data = output.to_data();
+    let values = output_data.as_slice::<f32>().unwrap();
+
+    let num_candidates = 8400;
+
+    let mut best_candidate = 0;
+    let mut best_score = 0.0_f32;
+
+    for candidate in 0..num_candidates {
+        let score = values[4 * num_candidates + candidate];
+
+        if score > best_score {
+            best_score = score;
+            best_candidate = candidate;
+        }
+    }
+
+    let x = values[best_candidate];
+    let y = values[num_candidates + best_candidate];
+    let w = values[2 * num_candidates + best_candidate];
+    let h = values[3 * num_candidates + best_candidate];
+
+    let x1 = x - w / 2.0;
+    let y1 = y - h / 2.0;
+    let x2 = x + w / 2.0;
+    let y2 = y + h / 2.0;
+
+    println!("Best candidate:");
+    println!("  index: {best_candidate}");
+    println!("  score: {best_score:.4}");
+    println!("  cx:    {x:.2}");
+    println!("  cy:    {y:.2}");
+    println!("  w:     {w:.2}");
+    println!("  h:     {h:.2}");
+    println!("  x1:    {x1:.2}");
+    println!("  y1:    {y1:.2}");
+    println!("  x2:    {x2:.2}");
+    println!("  y2:    {y2:.2}");
+
+}
+
+
 pub fn image_test() {
-    type Backend = NdArray<f32>;
+    type Backend = Flex;
     let device = Default::default();
     
     let model = sleep_person_yolo26n::Model::<Backend>::default();
     println!("Modelo cargado correctamente.");
 
     // Load image
-    let image = image::open("model/test.jpg")
+    let image = image::open("model/test2.jpg")
         .expect("No se pudo abrir model/test.jpg")
         .to_rgb8();
 
@@ -38,11 +93,9 @@ pub fn image_test() {
 
     let images = Tensor::<Backend, 1>::from_floats(input.as_slice(), &device)
         .reshape([1, 3, 640, 640]);
-
     println!("Input shape: {:?}", images.dims());
 
     let output = model.forward(images);
-
     println!("Output shape: {:?}", output.dims());
 
     let output_data = output.to_data();
@@ -50,17 +103,37 @@ pub fn image_test() {
 
     let num_candidates = 8400;
 
+    let mut best_candidate = 0;
+    let mut best_score = 0.0_f32;
+
     for candidate in 0..num_candidates {
-        let x = values[candidate];
-        let y = values[num_candidates + candidate];
-        let w = values[2 * num_candidates + candidate];
-        let h = values[3 * num_candidates + candidate];
         let score = values[4 * num_candidates + candidate];
 
-        if score > 0.01 {
-            println!(
-                "candidate {candidate}: x={x:.2}, y={y:.2}, w={w:.2}, h={h:.2}, score={score:.4}"
-            );
+        if score > best_score {
+            best_score = score;
+            best_candidate = candidate;
         }
     }
+
+    let x = values[best_candidate];
+    let y = values[num_candidates + best_candidate];
+    let w = values[2 * num_candidates + best_candidate];
+    let h = values[3 * num_candidates + best_candidate];
+
+    let x1 = x - w / 2.0;
+    let y1 = y - h / 2.0;
+    let x2 = x + w / 2.0;
+    let y2 = y + h / 2.0;
+
+    println!("Best candidate:");
+    println!("  index: {best_candidate}");
+    println!("  score: {best_score:.4}");
+    println!("  cx:    {x:.2}");
+    println!("  cy:    {y:.2}");
+    println!("  w:     {w:.2}");
+    println!("  h:     {h:.2}");
+    println!("  x1:    {x1:.2}");
+    println!("  y1:    {y1:.2}");
+    println!("  x2:    {x2:.2}");
+    println!("  y2:    {y2:.2}");
 }
