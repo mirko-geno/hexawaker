@@ -48,5 +48,6 @@ fn main() {
         .expect("Error opening model/test.jpg")
         .to_rgb8();
 
-    model::analyze_image(&device, &model, image);
+    let res = model::analyze_image(&device, &model, image.clone());
+    println!("Got {} detections", res.len());
 }
