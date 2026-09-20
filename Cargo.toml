@@ -4,4 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+burn = "0.21.0"
+burn-ndarray = "0.21.0"
+burn-store = "0.21.0"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
+image = "0.25.10"
+
+[build-dependencies]
+burn-onnx = "0.21.0"

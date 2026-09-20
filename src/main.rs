@@ -1,4 +1,5 @@
 use chrono::{Local, Timelike};
+mod model;
 
 /// Returns whether the current local time falls within the configured sleep window.
 ///
@@ -29,8 +30,11 @@ fn is_sleep_time() -> bool {
     }
 }
 
+
 fn main() {
     let now = Local::now();
     println!("Hour: {}", now.hour());
     println!("Is sleep time: {}", is_sleep_time());
+
+    model::image_test()
 }
