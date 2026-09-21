@@ -17,7 +17,7 @@ fn main(){
 */
 fn main() {
     ModelGen::new()
-        .input("model/sleep_person_yolo26n.onnx")
+        .input("model/sleep_person_yolo26n-v2.onnx")
         .out_dir("model/")
         .run_from_script();
 }
