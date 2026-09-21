@@ -1,3 +1,6 @@
+use std::{
+    println, process::{Child, Command}, thread::sleep, time::Duration
+};
 use burn_flex::Flex;
 use chrono::{Local, Timelike};
 
@@ -7,6 +10,8 @@ const SLEEP_START_HOUR  : u32 = 21;
 const SLEEP_START_MIN   : u32 = 30;
 const SLEEP_END_HOUR    : u32 = 06;
 const SLEEP_END_MIN     : u32 = 00;
+const INTERVAL          : Duration = Duration::from_millis(500);
+
 
 /// Returns whether the current local time falls within the configured sleep window.
 ///
@@ -33,6 +38,23 @@ fn is_sleep_time() -> bool {
 }
 
 
+fn start_alarm() -> Child {
+    Command::new("sh")
+        .args([
+            "-c",
+            "while true; do aplay /home/mirko/Downloads/prueba/sample-9s.wav; done",
+        ])
+        .spawn()
+        .expect("Failed to start alarm")
+}
+
+fn stop_alarm(alarm: &mut Option<Child>) {
+    if let Some(mut process) = alarm.take() {
+        let _ = process.kill();
+    }
+}
+
+
 fn main() {
     type Backend = Flex;
     let device = Default::default();
@@ -40,14 +62,37 @@ fn main() {
     let model = sleep_person_yolo26n::Model::<Backend>::default();
     println!("Model loaded!");
 
-    let now = Local::now();
-    println!("Hour: {}", now.hour());
-    println!("Is sleep time: {}", is_sleep_time());
+    let mut counter = 0;
+    let mut alarm: Option<Child> = None;
+    loop {
+        if is_sleep_time() {
+            counter = 0;
+            stop_alarm(&mut alarm);
+            println!("Its sleep time");
+            sleep(INTERVAL);
+            continue
+        }
 
-    let image = image::open("model/test.jpg")
-        .expect("Error opening model/test.jpg")
-        .to_rgb8();
+        let image = image::open("model/test.jpg")
+            .expect("Error opening image")
+            .to_rgb8();
 
-    let res = model::analyze_image(&device, &model, image.clone());
-    println!("Got {} detections", res.len());
+        let detections = model::analyze_image(&device, &model, image.clone());
+        println!("Got {} detections", detections.len());
+
+        if detections.is_empty() {
+            counter = 0;
+            stop_alarm(&mut alarm);
+            sleep(INTERVAL);
+            continue
+        }
+
+        counter += 1;
+
+        if counter >= 5 && alarm.is_none() {
+            alarm = Some(start_alarm());
+        }
+
+        sleep(INTERVAL);
+    }
 }
