@@ -6,7 +6,6 @@ use image::{
     imageops::FilterType
 };
 use imageproc::{drawing, rect::Rect};
-
 use crate::sleep_person_yolo26n;
 
 
@@ -126,13 +125,13 @@ pub fn analyze_image<B:Backend + VisionBackend>(
     model: &sleep_person_yolo26n::Model::<B>,
     image: RgbImage,
 ) -> Vec<Detection> {    
-    println!("Original image dims: {}x{}", image.width(), image.height());
+    debug_println!("Original image dims: {}x{}", image.width(), image.height());
     
     let image_tensor = adapt_image(device, image.clone());
-    println!("Input shape: {:?}", image_tensor.dims());
+    debug_println!("Input shape: {:?}", image_tensor.dims());
 
     let output = model.forward(image_tensor);
-    println!("Output shape: {:?}", output.dims());
+    debug_println!("Output shape: {:?}", output.dims());
 
     let detections = detect(device, output);
     
@@ -162,7 +161,7 @@ pub fn draw_detections(mut image: image::RgbImage, detections: &[Detection], pat
         let width = (x2 - x1).max(0) as u32;
         let height = (y2 - y1).max(0) as u32;
 
-        println!("x1:{x1}, x2:{x2}, y1:{y1}, y2:{y2}, w:{width}, h:{height}");
+        debug_println!("x1:{x1}, x2:{x2}, y1:{y1}, y2:{y2}, w:{width}, h:{height}");
 
         let rect = Rect::at(x1, y1).of_size(width, height);
 

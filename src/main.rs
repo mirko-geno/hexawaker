@@ -1,12 +1,19 @@
 use std::{
-    println, process::{Child, Command}, thread::sleep, time::Duration
+    process::{Child, Command},
+    thread::sleep,
+    time::Duration
 };
 use burn_flex::Flex;
 use chrono::{Local, Timelike};
 
-use hexawaker::{sleep_person_yolo26n, model};
+use hexawaker::{
+    sleep_person_yolo26n,
+    model,
+    camera::{init_camera, Stream},
+    debug_println,
+};
 
-const SLEEP_START_HOUR  : u32 = 21;
+const SLEEP_START_HOUR  : u32 = 00;
 const SLEEP_START_MIN   : u32 = 30;
 const SLEEP_END_HOUR    : u32 = 06;
 const SLEEP_END_MIN     : u32 = 00;
@@ -48,6 +55,7 @@ fn start_alarm() -> Child {
         .expect("Failed to start alarm")
 }
 
+
 fn stop_alarm(alarm: &mut Option<Child>) {
     if let Some(mut process) = alarm.take() {
         let _ = process.kill();
@@ -60,7 +68,12 @@ fn main() {
     let device = Default::default();
     
     let model = sleep_person_yolo26n::Model::<Backend>::default();
-    println!("Model loaded!");
+    debug_println!("Model loaded!");
+
+    let camera = init_camera();
+    let stream = Stream::new(camera);
+    // Sleep 2 seconds to ensure stream initialization
+    sleep(Duration::from_secs(2));
 
     let mut counter = 0;
     let mut alarm: Option<Child> = None;
@@ -68,17 +81,20 @@ fn main() {
         if is_sleep_time() {
             counter = 0;
             stop_alarm(&mut alarm);
-            println!("Its sleep time");
+            debug_println!("Its sleep time");
             sleep(INTERVAL);
             continue
         }
+    
+        let frame = stream.get_last_frame();
+        debug_println!("Captured frame: {} bytes", frame.len());
 
-        let image = image::open("model/test.jpg")
-            .expect("Error opening image")
+        let image = image::load_from_memory(frame.as_slice())
+            .expect("Failed to decode JPEG")
             .to_rgb8();
 
         let detections = model::analyze_image(&device, &model, image.clone());
-        println!("Got {} detections", detections.len());
+        debug_println!("Got {} detections", detections.len());
 
         if detections.is_empty() {
             counter = 0;

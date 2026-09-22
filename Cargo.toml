@@ -2,15 +2,32 @@
 name = "hexawaker"
 version = "0.1.0"
 edition = "2024"
+description = "Real-time bed occupancy detection using computer vision and ONNX inference"
+repository = "https://github.com/mirko-geno/hexawaker"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
 
 [dependencies]
-burn = "0.21.0"
-burn-flex = "0.21.0"
-burn-store = "0.21.0"
-burn-vision = "0.21.0"
+# Machine learning / inference
+burn = "0.21"
+burn-flex = "0.21"
+burn-store = "0.21"
+burn-vision = "0.21"
+
+# Image processing
+image = "0.25"
+imageproc = "0.27"
+
+# Camera / V4L2
+v4l = "0.14"
+
+# Time
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-image = "0.25.10"
-imageproc = "0.27.0"
 
 [build-dependencies]
-burn-onnx = "0.21.0"
+burn-onnx = "0.21"
