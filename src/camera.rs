@@ -66,7 +66,7 @@ pub fn init_camera() -> Device {
         .expect("Failed to get camera format");
 
     format.width = 640;
-    format.height = 480;
+    format.height = 640;
     format.fourcc = v4l::FourCC::new(b"MJPG");
 
     camera
