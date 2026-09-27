@@ -1,4 +1,4 @@
-use burn_onnx::ModelGen;
+use burn_onnx::{ModelGen, LoadStrategy};
 // For saving the generated files to the project
 /*
 use std::env;
@@ -19,6 +19,7 @@ fn main() {
     ModelGen::new()
         .input("model/sleep_person_yolo26n-v2.onnx")
         .out_dir("model/")
+        .load_strategy(LoadStrategy::Embedded)
         .run_from_script();
 }
 

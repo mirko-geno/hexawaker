@@ -13,7 +13,7 @@ use hexawaker::{
     debug_println,
 };
 
-const SLEEP_START_HOUR  : u32 = 00;
+const SLEEP_START_HOUR  : u32 = 21;
 const SLEEP_START_MIN   : u32 = 30;
 const SLEEP_END_HOUR    : u32 = 06;
 const SLEEP_END_MIN     : u32 = 00;
@@ -49,7 +49,7 @@ fn start_alarm() -> Child {
     Command::new("sh")
         .args([
             "-c",
-            "while true; do aplay /home/mirko/Downloads/prueba/sample-9s.wav; done",
+            "while true; do aplay /home/mirko/Downloads/alarm.wav; done",
         ])
         .spawn()
         .expect("Failed to start alarm")
@@ -67,7 +67,7 @@ fn main() {
     type Backend = Flex;
     let device = Default::default();
     
-    let model = sleep_person_yolo26n::Model::<Backend>::default();
+    let model = sleep_person_yolo26n::Model::<Backend>::from_embedded(&device);
     debug_println!("Model loaded!");
 
     let camera = init_camera();
