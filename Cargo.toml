@@ -14,8 +14,7 @@ panic = "abort"
 
 [dependencies]
 # Machine learning / inference
-burn = "0.21"
-burn-flex = "0.21"
+burn = { version = "0.21", features = ["wgpu", "vulkan"] }
 burn-store = "0.21"
 burn-vision = "0.21"
 

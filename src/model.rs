@@ -144,7 +144,7 @@ pub fn analyze_image<B:Backend + VisionBackend>(
     draw_detections(
         resized,
         &detections,
-        "model/debug.jpg",
+        "debug.jpg",
     );
 
     detections

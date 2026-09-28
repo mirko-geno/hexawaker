@@ -3,13 +3,16 @@ use std::{
     thread::sleep,
     time::Duration
 };
-use burn_flex::Flex;
+use burn::backend::{
+    Vulkan,
+    wgpu::WgpuDevice,
+};
 use chrono::{Local, Timelike};
 
 use hexawaker::{
     sleep_person_yolo26n,
     model,
-    camera::{init_camera, Stream},
+    // camera::{init_camera, Stream},
     debug_println,
 };
 
@@ -64,14 +67,14 @@ fn stop_alarm(alarm: &mut Option<Child>) {
 
 
 fn main() {
-    type Backend = Flex;
-    let device = Default::default();
+    type Backend = Vulkan;
+    let device = WgpuDevice::IntegratedGpu(0);
     
     let model = sleep_person_yolo26n::Model::<Backend>::from_embedded(&device);
     debug_println!("Model loaded!");
 
-    let camera = init_camera();
-    let stream = Stream::new(camera);
+    // let camera = init_camera();
+    // let stream = Stream::new(camera);
     // Sleep 2 seconds to ensure stream initialization
     sleep(Duration::from_secs(2));
 
@@ -86,13 +89,18 @@ fn main() {
             continue
         }
     
-        let frame = stream.get_last_frame();
-        debug_println!("Captured frame: {} bytes", frame.len());
+        // let frame = stream.get_last_frame();
+        // debug_println!("Captured frame: {} bytes", frame.len());
 
+        /*
         let image = image::load_from_memory(frame.as_slice())
             .expect("Failed to decode JPEG")
             .to_rgb8();
-
+        */
+        let image = image::open("test.jpg")
+            .expect("Error opening image")
+            .to_rgb8();
+        
         let detections = model::analyze_image(&device, &model, image.clone());
         debug_println!("Got {} detections", detections.len());
 
